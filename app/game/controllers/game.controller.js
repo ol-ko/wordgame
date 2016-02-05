@@ -7,9 +7,9 @@ angular.module("game").controller('GameController', ['$scope', 'Words', 'Score',
 			removedCharsCounter,
 			previousAttemptWordLength;
 
-		$scope.secondsLeft = 40;
 		$scope.scoreHistory = [];
 		$scope.totalScore = 0;
+		$scope.wordsGuessed = 0;
 
 		// Fisher-Yates array shuffle
 		var shuffleArray = function (array) {
@@ -64,6 +64,7 @@ angular.module("game").controller('GameController', ['$scope', 'Words', 'Score',
 
 			// user has guessed
 			if ($scope.attempt === activeWord) {
+				$scope.wordsGuessed += 1;
 				recordWordScore();
 				initNewPuzzle();
 			}
@@ -87,29 +88,31 @@ angular.module("game").controller('GameController', ['$scope', 'Words', 'Score',
 		// Saves user score in a db and redirects user to the highscore table
 		$scope.saveHighScore = function () {
 			if ($scope.username) {
-				Score.$add({
+				Score.add({
 					username: $scope.username,
 					total: $scope.totalScore,
 					totalForSorting: -1 * $scope.totalScore, // hack for desc sorting, Firebase is SO weird
 					scoreHistory: $scope.scoreHistory
-				}).then(function () {
+				}, function () {
 					$location.path('/highscore');
 				});
 			}
 		};
 
-		// Setting interval function to update simple timer and hide game input part when time is up
-		var interval = $interval(function () {
-			$scope.secondsLeft -= 1;
-			if ($scope.secondsLeft == 0) {
-				$interval.cancel(interval);
-			}
-		}, 1000);
-
 		Words.get(
 			function (words) {
 				if (words.length > 0) {
 					wordsPull = shuffleArray(words);
+
+					// Setting interval function to update simple timer and hide game input part when time is up
+					$scope.secondsLeft = 10;
+					var interval = $interval(function () {
+						$scope.secondsLeft -= 1;
+						if ($scope.secondsLeft == 0) {
+							$interval.cancel(interval);
+						}
+					}, 1000);
+
 					initNewPuzzle();
 				}
 			}

@@ -1,39 +1,92 @@
 <!-- Game on section -->
 <section ng-show="secondsLeft > 0">
 
-	<h1>{{secondsLeft}} seconds left</h1>
-	<div>{{obfuscatedWord}}</div>
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12 col-md-7">
+				<h1 class="puzzle text-center">{{obfuscatedWord}}</h1>
 
-	<input type="text" ng-model="attempt" ng-change="handleUserAttempt()"/>
-	<div>
-		Total score: {{totalScore}}
+				<input type="text" ng-model="attempt" ng-change="handleUserAttempt()" class="form-control input-lg"/>
+			</div>
+			<div class="col-sm-12 col-md-1">
+			</div>
+			<div class="col-sm-12 col-md-4">
+
+					<div class="stats">
+						<div class="row">
+							<div class="col-sm-12 col-md-4 text-center">
+								<div class="circle">
+									{{secondsLeft}}
+								</div>
+								<div>seconds left</div>
+							</div>
+							<div class="col-sm-12 col-md-4 text-center">
+								<div class="circle">
+									{{wordsGuessed}}
+								</div>
+								<div>words guessed</div>
+							</div>
+							<div class="col-sm-12 col-md-4 text-center">
+								<div class="circle">
+									{{totalScore}}
+								</div>
+								<div>points earned</div>
+							</div>
+						</div>
+					</div>
+				<section class="buttons">
+					<a class="btn btn-primary form-control" href="#/playagain">Start over</a>
+					<a class="btn btn-default form-control" href="#/highscore">See highscore</a>
+				</section>
+			</div>
+		</div>
 	</div>
+
+
 
 </section>
 
 <!-- Game over section-->
-<section ng-show="secondsLeft == 0">
+<section ng-show="secondsLeft == 0" class="text-center">
 	<h1>Time is up!</h1>
 
-	<div>
-		Total score: {{totalScore}}
+
+	<div ng-show="totalScore >= 10">
+		Great job! {{totalScore}} points!
+	</div>
+	<div ng-show="totalScore < 10">
+		{{totalScore}} points scored, you'll do better next time
 	</div>
 
-	<ul>
-		<li ng-repeat="item in scoreHistory">
-			{{item.word}}:{{item.score}}:{{item.corrections}}
-		</li>
-	</ul>
 
-	<div ng-show="totalScore > 0">
-		What glorious name should be added to the pages of history?
-		<form ng-submit="saveHighScore()">
-			<input type="text" ng-model="username" />
-			<input type="submit" value="This one!">
-		</form>
-	</div>
+	<section class="buttons">
+		<a class="btn btn-primary" href="#/playagain">Start over</a>
+		<a class="btn btn-default" href="#/highscore">See highscore</a>
+	</section>
+
+	<section class="text-center game-details">
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-12 col-md-6">
+					<h3>Game overview:</h3>
+
+					<ul class="list-group">
+						<li class="list-group-item" ng-repeat="item in scoreHistory">
+							{{item.word}} : {{item.score}} points
+						</li>
+					</ul>
+				</div>
+				<div class="col-sm-12 col-md-6">
+					<div class="highscore-form">
+						<h3>What glorious name shall we add to the pages of history?</h3>
+						<form ng-submit="saveHighScore()">
+							<input type="text" ng-model="username" class="form-control"/>
+							<input type="submit" value="This one!" class="btn btn-default form-control">
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
 
 </section>
-
-<a href="#/playagain">Start over</a>
-<a href="#/highscore">See highscore</a>

@@ -1,7 +1,5 @@
-var appName = 'wordgame';
-
-var appMainModule = angular.module(appName, ['ngRoute', 'firebase', 'game']);
+var appMainModule = angular.module('wordgame', ['ngRoute', 'firebase', 'game']);
 
 angular.element(document).ready(function () {
-	angular.bootstrap(document, [appName]);
+	angular.bootstrap(document, ['wordgame']);
 });

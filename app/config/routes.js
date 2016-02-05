@@ -1,4 +1,4 @@
-angular.module(appName).config(['$routeProvider',
+angular.module('wordgame').config(['$routeProvider',
 	function ($routeProvider) {
 		$routeProvider.when('/words', {
 			templateUrl: '/app/words/views/words.view.html',
@@ -6,9 +6,13 @@ angular.module(appName).config(['$routeProvider',
 		}).when('/highscore', {
 			templateUrl: '/app/score/views/score.view.html',
 			controller: 'ScoreController'
-		}).when('/', {
+		}).when('/play', {
 			templateUrl: '/app/game/views/game.view.html',
 			controller: 'GameController'
+		}).when('/playagain', {
+			redirectTo: '/play'
+		}).when('/', {
+			templateUrl: '/app/game/views/gamestart.view.html'
 		}).otherwise({
 			redirectTo: '/'
 		})
