@@ -1,13 +1,39 @@
-<div>{{obfuscatedWord}}</div>
+<!-- Game on section -->
+<section ng-show="secondsLeft > 0">
 
-<input type="text" ng-model="attempt" ng-change="handleUserAttempt()"/>
+	<h1>{{secondsLeft}} seconds left</h1>
+	<div>{{obfuscatedWord}}</div>
 
-<div>
-	Total score: {{totalScore}}
-</div>
+	<input type="text" ng-model="attempt" ng-change="handleUserAttempt()"/>
+	<div>
+		Total score: {{totalScore}}
+	</div>
 
-<ul>
-	<li ng-repeat="entry in scoreHistory">
-		{{entry.word}}: {{entry.score}} of {{entry.max}} - {{entry.corrections}}
-	</li>
-</ul>
+</section>
+
+<!-- Game over section-->
+<section ng-show="secondsLeft == 0">
+	<h1>Time is up!</h1>
+
+	<div>
+		Total score: {{totalScore}}
+	</div>
+
+	<ul>
+		<li ng-repeat="item in scoreHistory">
+			{{item.word}}:{{item.score}}:{{item.corrections}}
+		</li>
+	</ul>
+
+	<div ng-show="totalScore > 0">
+		What glorious name should be added to the pages of history?
+		<form ng-submit="saveHighScore()">
+			<input type="text" ng-model="username" />
+			<input type="submit" value="This one!">
+		</form>
+	</div>
+
+</section>
+
+<a href="#/playagain">Start over</a>
+<a href="#/highscore">See highscore</a>

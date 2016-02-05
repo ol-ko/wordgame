@@ -1,0 +1,15 @@
+<section>
+	<h1>Highscore: </h1>
+	<ul>
+		<li ng-repeat="entry in score">
+
+			{{entry.username}}:{{entry.total}}
+
+			<ul>
+				<li ng-repeat="item in entry.scoreHistory">
+					{{item.word}}:{{item.score}}:{{item.corrections}}
+				</li>
+			</ul>
+		</li>
+	</ul>
+</section>

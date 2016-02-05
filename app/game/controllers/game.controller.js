@@ -1,5 +1,5 @@
-angular.module("game").controller('GameController', ['$scope', 'Words',
-	function ($scope, Words) {
+angular.module("game").controller('GameController', ['$scope', 'Words', 'Score', '$interval', '$location',
+	function ($scope, Words, Score, $interval, $location) {
 
 		var wordsPull = [],
 			activeWord,
@@ -7,6 +7,7 @@ angular.module("game").controller('GameController', ['$scope', 'Words',
 			removedCharsCounter,
 			previousAttemptWordLength;
 
+		$scope.secondsLeft = 40;
 		$scope.scoreHistory = [];
 		$scope.totalScore = 0;
 
@@ -49,21 +50,7 @@ angular.module("game").controller('GameController', ['$scope', 'Words',
 			previousAttemptWordLength = 0;
 		};
 
-		// Calculates and records word score
-		var recordWordScore = function () {
-			var wordScore = wordMaxScore - removedCharsCounter;
-
-			wordScore = wordScore < 0 ? 0 : wordScore;
-
-			$scope.totalScore += wordScore;
-			$scope.scoreHistory.push({
-				word: activeWord,
-				score: wordScore,
-				max: wordMaxScore,
-				corrections: removedCharsCounter
-			});
-		};
-
+		// Checks if user has made corrections and/or guessed the word
 		$scope.handleUserAttempt = function () {
 			var attemptLength = $scope.attempt.length;
 
@@ -81,6 +68,43 @@ angular.module("game").controller('GameController', ['$scope', 'Words',
 				initNewPuzzle();
 			}
 		};
+
+		// Calculates and records word score
+		var recordWordScore = function () {
+			var wordScore = wordMaxScore - removedCharsCounter;
+
+			wordScore = wordScore < 0 ? 0 : wordScore;
+
+			$scope.totalScore += wordScore;
+			$scope.scoreHistory.push({
+				word: activeWord,
+				score: wordScore,
+				max: wordMaxScore,
+				corrections: removedCharsCounter
+			});
+		};
+
+		// Saves user score in a db and redirects user to the highscore table
+		$scope.saveHighScore = function () {
+			if ($scope.username) {
+				Score.$add({
+					username: $scope.username,
+					total: $scope.totalScore,
+					totalForSorting: -1 * $scope.totalScore, // hack for desc sorting, Firebase is SO weird
+					scoreHistory: $scope.scoreHistory
+				}).then(function () {
+					$location.path('/highscore');
+				});
+			}
+		};
+
+		// Setting interval function to update simple timer and hide game input part when time is up
+		var interval = $interval(function () {
+			$scope.secondsLeft -= 1;
+			if ($scope.secondsLeft == 0) {
+				$interval.cancel(interval);
+			}
+		}, 1000);
 
 		Words.get(
 			function (words) {
