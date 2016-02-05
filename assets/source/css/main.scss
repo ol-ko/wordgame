@@ -109,15 +109,15 @@ header {
 		transition: padding 0.3s ease-in-out;
 		padding: 0;
 		clear: both;
-		.game-details-trigger:checked + label + & {
-			height: auto;
-			padding: 2em 0;
-		}
 	}
 	.game-details-trigger:checked + label {
 		.glyphicon {
 			@extend .glyphicon-minus;
 		}
+	}
+	.game-details-trigger:checked + label + .game-details {
+		height: auto;
+		padding: 2em 0;
 	}
 	.game-details-trigger-label {
 		float: right;
@@ -126,7 +126,7 @@ header {
 		text-align: center;
 		display: block;
 		.glyphicon {
-			font-size: 2em;
+			font-size: 1em;
 			@extend .glyphicon-plus;
 		}
 	}
