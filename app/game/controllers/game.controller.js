@@ -105,7 +105,7 @@ angular.module("game").controller('GameController', ['$scope', 'Words', 'Score',
 					wordsPull = shuffleArray(words);
 
 					// Setting interval function to update simple timer and hide game input part when time is up
-					$scope.secondsLeft = 10;
+					$scope.secondsLeft = 40;
 					var interval = $interval(function () {
 						$scope.secondsLeft -= 1;
 						if ($scope.secondsLeft == 0) {
