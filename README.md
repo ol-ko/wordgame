@@ -12,16 +12,17 @@ Requires Node.js and npm of course.
 
 ## Installation
 
-```npm install```
 
-```bower install```
-
-```gulp```
+>  ``` npm install ```
+  
+>  ``` bower install ```
+  
+>  ``` gulp ``` 
 
 Game should run on http://localhost:3000
 
 ## Testing
 
-```npm test```
+> ``` npm test ```
 
 Test is written for already concatenated Javascript.
