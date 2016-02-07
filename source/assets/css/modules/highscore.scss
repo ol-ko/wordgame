@@ -1,0 +1,40 @@
+.highscore {
+	.game-details {
+		height: 0;
+		overflow: hidden;
+		clear: both;
+		background: $darkgray;
+		color: $white;
+		padding: 0 1em;
+		transition: padding $trDuration $trEasing;
+	}
+	.total,
+	.user {
+		float: left;
+	}
+	.total {
+		width: 100px;
+	}
+
+	.game-details-trigger {
+		display: none;
+	}
+	.game-details-trigger:checked + label + .game-details {
+		height: auto;
+		padding: 1em;
+	}
+	.game-details-trigger-label{
+		float: right;
+		cursor: pointer;
+		.icon{
+			&:before {
+				content: '[+]';
+			}
+		}
+	}
+	.game-details-trigger:checked + .game-details-trigger-label .icon{
+		&:before {
+			content: '[-]';
+		}
+	}
+}

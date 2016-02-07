@@ -1,254 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var appMainModule = angular.module('wordgame', ['ngRoute', 'firebase', 'game']);
-
-angular.element(document).ready(function () {
-	angular.bootstrap(document, ['wordgame']);
-});
-},{}],2:[function(require,module,exports){
-angular.module('wordgame').config(['$routeProvider',
-	function ($routeProvider) {
-		$routeProvider.when('/words', {
-			templateUrl: '/app/words/views/words.view.html',
-			controller: 'WordsController'
-		}).when('/highscore', {
-			templateUrl: '/app/score/views/score.view.html',
-			controller: 'ScoreController'
-		}).when('/play', {
-			templateUrl: '/app/game/views/game.view.html',
-			controller: 'GameController'
-		}).when('/playagain', {
-			redirectTo: '/play'
-		}).when('/', {
-			templateUrl: '/app/game/views/gamestart.view.html'
-		}).otherwise({
-			redirectTo: '/'
-		})
-	}
-]);
-},{}],3:[function(require,module,exports){
-angular.module("game").controller('GameController', ['$scope', 'Words', 'Score', '$interval', '$location',
-	function ($scope, Words, Score, $interval, $location) {
-
-		var wordsPull = [],
-			activeWord,
-			wordMaxScore,
-			removedCharsCounter,
-			previousAttemptWordLength;
-
-		$scope.scoreHistory = [];
-		$scope.totalScore = 0;
-		$scope.wordsGuessed = 0;
-
-		// Fisher-Yates array shuffle
-		var shuffleArray = function (array) {
-			var currentIndex = array.length,
-				randomIndex,
-				temproraryValue;
-
-			while (0 !== currentIndex) {
-				randomIndex = Math.floor(Math.random() * currentIndex);
-				currentIndex -= 1;
-
-				temproraryValue = array[currentIndex];
-				array[currentIndex] = array[randomIndex];
-				array[randomIndex] = temproraryValue;
-			}
-			return array;
-		};
-
-		// Shuffling string characters
-		var shuffleString = function (inputString) {
-			return shuffleArray(inputString.split('')).join('');
-		};
-
-
-		// Initiates a puzzle with a new word
-		var initNewPuzzle = function () {
-			// getting a first item of randomized words array
-			activeWord = wordsPull[0];
-			wordsPull.shift();
-
-			// obfuscate word
-			$scope.obfuscatedWord = shuffleString(activeWord);
-
-			// init current puzzle
-			$scope.attempt = '';
-			wordMaxScore = Math.floor(Math.pow(1.95, activeWord.length / 3));
-			removedCharsCounter = 0;
-			previousAttemptWordLength = 0;
-		};
-
-		// Checks if user has made corrections and/or guessed the word
-		$scope.handleUserAttempt = function () {
-			var attemptLength = $scope.attempt.length;
-
-			// if previous attempt is shorter than current - smth has been deleted
-			if (previousAttemptWordLength > attemptLength) {
-				removedCharsCounter += 1;
-				$scope.removedCharsCounter = removedCharsCounter;
-			}
-
-			previousAttemptWordLength = attemptLength;
-
-			// user has guessed
-			if ($scope.attempt === activeWord) {
-				$scope.wordsGuessed += 1;
-				recordWordScore();
-				initNewPuzzle();
-			}
-		};
-
-		// Calculates and records word score
-		var recordWordScore = function () {
-			var wordScore = wordMaxScore - removedCharsCounter;
-
-			wordScore = wordScore < 0 ? 0 : wordScore;
-
-			$scope.totalScore += wordScore;
-			$scope.scoreHistory.push({
-				word: activeWord,
-				score: wordScore,
-				max: wordMaxScore,
-				corrections: removedCharsCounter
-			});
-		};
-
-		// Saves user score in a db and redirects user to the highscore table
-		$scope.saveHighScore = function () {
-			if ($scope.username) {
-				Score.add({
-					username: $scope.username,
-					total: $scope.totalScore,
-					totalForSorting: -1 * $scope.totalScore, // hack for desc sorting, Firebase is SO weird
-					scoreHistory: $scope.scoreHistory
-				}, function () {
-					$location.path('/highscore');
-				});
-			}
-		};
-
-		Words.get(
-			function (words) {
-				if (words.length > 0) {
-					wordsPull = shuffleArray(words);
-
-					// Setting interval function to update simple timer and hide game input part when time is up
-					$scope.secondsLeft = 40;
-					var interval = $interval(function () {
-						$scope.secondsLeft -= 1;
-						if ($scope.secondsLeft == 0) {
-							$interval.cancel(interval);
-						}
-					}, 1000);
-
-					initNewPuzzle();
-				}
-			}
-		);
-	}]
-);
-},{}],4:[function(require,module,exports){
-angular.module('game', ['words', 'score']);
-},{}],5:[function(require,module,exports){
-angular.module("score").controller('ScoreController', ['$scope', 'Score',
-	function ($scope, Score) {
-		Score.list(function (data) {
-			$scope.score = data;
-		});
-	}]
-);
-},{}],6:[function(require,module,exports){
-angular.module('score', ['firebase']);
-},{}],7:[function(require,module,exports){
-angular.module('score').factory('Score', ['$firebaseArray',
-	function($firebaseArray) {
-		var ref = new Firebase("https://sandbox-wordgame.firebaseio.com/score"),
-			Highscore = $firebaseArray(ref.orderByChild('totalForSorting'));
-
-		return {
-			list: function (callback) {
-				Highscore.$loaded(function (data) {
-					callback(data);
-				});
-			},
-			add: function (newEntry, callback) {
-				Highscore.$add(newEntry).then(callback);
-			}
-		}
-	}
-]);
-
-
-},{}],8:[function(require,module,exports){
-angular.module("words").controller('WordsController', ['$scope', 'WordsData',
-	function ($scope, WordsData) {
-		$scope.words = WordsData;
-
-		$scope.addWord = function () {
-			if ($scope.newWord) {
-				$scope.words.$add({
-					word: $scope.newWord
-				});
-				$scope.newWord = '';
-			}
-		};
-	}]
-);
-},{}],9:[function(require,module,exports){
-angular.module('words').factory('WordsData', ['$firebaseArray',
-	function($firebaseArray) {
-		var ref = new Firebase("https://sandbox-wordgame.firebaseio.com/words");
-
-		return $firebaseArray(ref);
-	}
-]);
-
-angular.module('words').factory('Words', ['WordsData',
-	function (WordsData) {
-		return {
-			get: function (callback) {
-				WordsData.$loaded(
-					function (data) {
-						var wordsArray = [];
-
-						// storing word strings only
-						data.forEach(function (wordObj) {
-							wordsArray.push(wordObj.word);
-						});
-
-						callback(wordsArray);
-					},
-					function(error) {
-						$log.error('Error getting data from Firebase: ', error);
-						callback([]);
-					}
-				);
-			}
-		}
-	}
-]);
-},{}],10:[function(require,module,exports){
-angular.module('words', ['firebase']);
-},{}],11:[function(require,module,exports){
-$ = jQuery = require('../../../lib/jquery/dist/jquery.js');
-
-var Firebase = require('../../../lib/firebase/firebase.js'),
-	angular = require('../../../lib/angular/angular.js');
-
-require('../../../lib/angular-route/angular-route.js');
-require('../../../lib/angularfire/dist/angularfire.js');
-require('../../../app/words/words.module.js');
-require('../../../app/words/controllers/words.controller.js');
-require('../../../app/words/services/words.service.js');
-require('../../../app/score/score.module.js');
-require('../../../app/score/controllers/score.controller.js');
-require('../../../app/score/services/score.service.js');
-require('../../../app/game/game.module.js');
-require('../../../app/game/controllers/game.controller.js');
-require('../../../app/application.js');
-require('../../../app/config/routes.js');
-require('../../../lib/bootstrap-sass/assets/javascripts/bootstrap.js');
-},{"../../../app/application.js":1,"../../../app/config/routes.js":2,"../../../app/game/controllers/game.controller.js":3,"../../../app/game/game.module.js":4,"../../../app/score/controllers/score.controller.js":5,"../../../app/score/score.module.js":6,"../../../app/score/services/score.service.js":7,"../../../app/words/controllers/words.controller.js":8,"../../../app/words/services/words.service.js":9,"../../../app/words/words.module.js":10,"../../../lib/angular-route/angular-route.js":12,"../../../lib/angular/angular.js":13,"../../../lib/angularfire/dist/angularfire.js":14,"../../../lib/bootstrap-sass/assets/javascripts/bootstrap.js":15,"../../../lib/firebase/firebase.js":16,"../../../lib/jquery/dist/jquery.js":17}],12:[function(require,module,exports){
 /**
  * @license AngularJS v1.4.9
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -1241,7 +991,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 
 })(window, window.angular);
 
-},{}],13:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 /**
  * @license AngularJS v1.4.9
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -30899,7 +30649,7 @@ $provide.value("$locale", {
 })(window, document);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],14:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 /*!
  * AngularFire is the officially supported AngularJS binding for Firebase. Firebase
  * is a full backend so you don't need servers to build your Angular app. AngularFire
@@ -33178,7 +32928,7 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
     }
 })();
 
-},{}],15:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /*!
  * Bootstrap v3.3.6 (http://getbootstrap.com)
  * Copyright 2011-2015 Twitter, Inc.
@@ -35543,7 +35293,7 @@ if (typeof jQuery === 'undefined') {
 
 }(jQuery);
 
-},{}],16:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /*! @license Firebase v2.4.0
     License: https://www.firebase.com/terms/terms-of-service.html */
 (function() {var h,n=this;function p(a){return void 0!==a}function aa(){}function ba(a){a.yb=function(){return a.zf?a.zf:a.zf=new a}}
@@ -35822,7 +35572,7 @@ X.prototype.re=function(a,b){D("Firebase.changeEmail",1,2,arguments.length);sg("
 X.prototype.Ze=function(a,b){D("Firebase.resetPassword",1,2,arguments.length);sg("Firebase.resetPassword",1,a,!1);tg("Firebase.resetPassword",a,"email");F("Firebase.resetPassword",2,b,!0);var c=new B;this.k.O.Ze(a,C(c,b));return c.D};X.prototype.resetPassword=X.prototype.Ze;})();
 
 
-},{}],17:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.2.0
  * http://jquery.com/
@@ -45655,4 +45405,254 @@ if ( !noGlobal ) {
 return jQuery;
 }));
 
-},{}]},{},[11]);
+},{}],7:[function(require,module,exports){
+var appMainModule = angular.module('wordgame', ['ngRoute', 'firebase', 'game']);
+
+angular.element(document).ready(function () {
+	angular.bootstrap(document, ['wordgame']);
+});
+},{}],8:[function(require,module,exports){
+angular.module('wordgame').config(['$routeProvider',
+	function ($routeProvider) {
+		$routeProvider.when('/words', {
+			templateUrl: '/app/words/views/words.view.html',
+			controller: 'WordsController'
+		}).when('/highscore', {
+			templateUrl: '/app/score/views/score.view.html',
+			controller: 'ScoreController'
+		}).when('/play', {
+			templateUrl: '/app/game/views/game.view.html',
+			controller: 'GameController'
+		}).when('/playagain', {
+			redirectTo: '/play'
+		}).when('/', {
+			templateUrl: '/app/game/views/gamestart.view.html'
+		}).otherwise({
+			redirectTo: '/'
+		})
+	}
+]);
+},{}],9:[function(require,module,exports){
+angular.module("game").controller('GameController', ['$scope', 'Words', 'Score', '$interval', '$location',
+	function ($scope, Words, Score, $interval, $location) {
+
+		var wordsPull = [],
+			activeWord,
+			wordMaxScore,
+			removedCharsCounter,
+			previousAttemptWordLength;
+
+		$scope.scoreHistory = [];
+		$scope.totalScore = 0;
+		$scope.wordsGuessed = 0;
+
+		// Fisher-Yates array shuffle
+		var shuffleArray = function (array) {
+			var currentIndex = array.length,
+				randomIndex,
+				temproraryValue;
+
+			while (0 !== currentIndex) {
+				randomIndex = Math.floor(Math.random() * currentIndex);
+				currentIndex -= 1;
+
+				temproraryValue = array[currentIndex];
+				array[currentIndex] = array[randomIndex];
+				array[randomIndex] = temproraryValue;
+			}
+			return array;
+		};
+
+		// Shuffling string characters
+		var shuffleString = function (inputString) {
+			return shuffleArray(inputString.split('')).join('');
+		};
+
+
+		// Initiates a puzzle with a new word
+		var initNewPuzzle = function () {
+			// getting a first item of randomized words array
+			activeWord = wordsPull[0];
+			wordsPull.shift();
+
+			// obfuscate word
+			$scope.obfuscatedWord = shuffleString(activeWord);
+
+			// init current puzzle
+			$scope.attempt = '';
+			wordMaxScore = Math.floor(Math.pow(1.95, activeWord.length / 3));
+			removedCharsCounter = 0;
+			previousAttemptWordLength = 0;
+		};
+
+		// Checks if user has made corrections and/or guessed the word
+		$scope.handleUserAttempt = function () {
+			var attemptLength = $scope.attempt.length;
+
+			// if previous attempt is shorter than current - smth has been deleted
+			if (previousAttemptWordLength > attemptLength) {
+				removedCharsCounter += 1;
+				$scope.removedCharsCounter = removedCharsCounter;
+			}
+
+			previousAttemptWordLength = attemptLength;
+
+			// user has guessed
+			if ($scope.attempt === activeWord) {
+				$scope.wordsGuessed += 1;
+				recordWordScore();
+				initNewPuzzle();
+			}
+		};
+
+		// Calculates and records word score
+		var recordWordScore = function () {
+			var wordScore = wordMaxScore - removedCharsCounter;
+
+			wordScore = wordScore < 0 ? 0 : wordScore;
+
+			$scope.totalScore += wordScore;
+			$scope.scoreHistory.push({
+				word: activeWord,
+				score: wordScore,
+				max: wordMaxScore,
+				corrections: removedCharsCounter
+			});
+		};
+
+		// Saves user score in a db and redirects user to the highscore table
+		$scope.saveHighScore = function () {
+			if ($scope.username) {
+				Score.add({
+					username: $scope.username,
+					total: $scope.totalScore,
+					totalForSorting: -1 * $scope.totalScore, // hack for desc sorting, Firebase is SO weird
+					scoreHistory: $scope.scoreHistory
+				}, function () {
+					$location.path('/highscore');
+				});
+			}
+		};
+
+		Words.get(
+			function (words) {
+				if (words.length > 0) {
+					wordsPull = shuffleArray(words);
+
+					// Setting interval function to update simple timer and hide game input part when time is up
+					$scope.secondsLeft = 40;
+					var interval = $interval(function () {
+						$scope.secondsLeft -= 1;
+						if ($scope.secondsLeft == 0) {
+							$interval.cancel(interval);
+						}
+					}, 1000);
+
+					initNewPuzzle();
+				}
+			}
+		);
+	}]
+);
+},{}],10:[function(require,module,exports){
+angular.module('game', ['words', 'score']);
+},{}],11:[function(require,module,exports){
+angular.module("score").controller('ScoreController', ['$scope', 'Score',
+	function ($scope, Score) {
+		Score.list(function (data) {
+			$scope.score = data;
+		});
+	}]
+);
+},{}],12:[function(require,module,exports){
+angular.module('score', ['firebase']);
+},{}],13:[function(require,module,exports){
+angular.module('score').factory('Score', ['$firebaseArray',
+	function($firebaseArray) {
+		var ref = new Firebase("https://sandbox-wordgame.firebaseio.com/score"),
+			Highscore = $firebaseArray(ref.orderByChild('totalForSorting'));
+
+		return {
+			list: function (callback) {
+				Highscore.$loaded(function (data) {
+					callback(data);
+				});
+			},
+			add: function (newEntry, callback) {
+				Highscore.$add(newEntry).then(callback);
+			}
+		}
+	}
+]);
+
+
+},{}],14:[function(require,module,exports){
+angular.module("words").controller('WordsController', ['$scope', 'WordsData',
+	function ($scope, WordsData) {
+		$scope.words = WordsData;
+
+		$scope.addWord = function () {
+			if ($scope.newWord) {
+				$scope.words.$add({
+					word: $scope.newWord
+				});
+				$scope.newWord = '';
+			}
+		};
+	}]
+);
+},{}],15:[function(require,module,exports){
+angular.module('words').factory('WordsData', ['$firebaseArray',
+	function($firebaseArray) {
+		var ref = new Firebase("https://sandbox-wordgame.firebaseio.com/words");
+
+		return $firebaseArray(ref);
+	}
+]);
+
+angular.module('words').factory('Words', ['WordsData',
+	function (WordsData) {
+		return {
+			get: function (callback) {
+				WordsData.$loaded(
+					function (data) {
+						var wordsArray = [];
+
+						// storing word strings only
+						data.forEach(function (wordObj) {
+							wordsArray.push(wordObj.word);
+						});
+
+						callback(wordsArray);
+					},
+					function(error) {
+						$log.error('Error getting data from Firebase: ', error);
+						callback([]);
+					}
+				);
+			}
+		}
+	}
+]);
+},{}],16:[function(require,module,exports){
+angular.module('words', ['firebase']);
+},{}],17:[function(require,module,exports){
+$ = jQuery = require('../../../lib/jquery/dist/jquery.js');
+
+var Firebase = require('../../../lib/firebase/firebase.js'),
+	angular = require('../../../lib/angular/angular.js');
+
+require('../../../lib/angular-route/angular-route.js');
+require('../../../lib/angularfire/dist/angularfire.js');
+require('../../app/words/words.module.js');
+require('../../app/words/controllers/words.controller.js');
+require('../../app/words/services/words.service.js');
+require('../../app/score/score.module.js');
+require('../../app/score/controllers/score.controller.js');
+require('../../app/score/services/score.service.js');
+require('../../app/game/game.module.js');
+require('../../app/game/controllers/game.controller.js');
+require('../../app/application.js');
+require('../../app/config/routes.js');
+require('../../../lib/bootstrap-sass/assets/javascripts/bootstrap.js');
+},{"../../../lib/angular-route/angular-route.js":1,"../../../lib/angular/angular.js":2,"../../../lib/angularfire/dist/angularfire.js":3,"../../../lib/bootstrap-sass/assets/javascripts/bootstrap.js":4,"../../../lib/firebase/firebase.js":5,"../../../lib/jquery/dist/jquery.js":6,"../../app/application.js":7,"../../app/config/routes.js":8,"../../app/game/controllers/game.controller.js":9,"../../app/game/game.module.js":10,"../../app/score/controllers/score.controller.js":11,"../../app/score/score.module.js":12,"../../app/score/services/score.service.js":13,"../../app/words/controllers/words.controller.js":14,"../../app/words/services/words.service.js":15,"../../app/words/words.module.js":16}]},{},[17]);

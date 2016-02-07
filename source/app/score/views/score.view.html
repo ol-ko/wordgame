@@ -1,0 +1,54 @@
+<section class="highscore">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12 col-md-6">
+				<h1>Highscore </h1>
+			</div>
+			<div class="col-sm-12 col-md-6 text-right">
+				<a class="btn btn-primary" href="#/playagain">Play again!</a>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<section><ul class="list-group">
+					<li  class="list-group-item clearfix list-header">
+						<div class="total">Score</div>
+						<div class="user">Username</div>
+					</li>
+					<li  class="list-group-item clearfix" ng-repeat="entry in score">
+						<div class="total">{{entry.total}}</div>
+						<div class="user">{{entry.username}}</div>
+
+						<input type="checkbox" class="game-details-trigger" id="cb_{{entry.$id}}"/>
+
+						<label for="cb_{{entry.$id}}" class="game-details-trigger-label">
+							<span class="icon"></span>
+						</label>
+
+
+						<div class="game-details">
+							<div ng-repeat="item in entry.scoreHistory">
+								{{item.word}}: {{item.score}} points
+
+								<span class="corrections" ng-show="item.corrections > 0">
+									 (there were {{item.corrections}} corrections)
+								</span>
+							</div>
+						</div>
+					</li>
+				</ul></section>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12 col-md-6">
+			</div>
+			<div class="col-sm-12 col-md-6 text-right">
+				<a class="btn btn-primary" href="#/playagain">Play again!</a>
+			</div>
+		</div>
+	</div>
+
+
+
+
+</section>
