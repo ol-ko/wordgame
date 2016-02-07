@@ -1,0 +1,13 @@
+.start-screen {
+	margin-top: 1em;
+	h1 {
+		text-decoration: underline;
+		font-weight: bold;
+	}
+	.teaser {
+		background: $darkgray;
+		color: $white;
+		padding: 2em 0;
+		margin: 2em 0 1em 0;
+	}
+}

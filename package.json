@@ -1,0 +1,35 @@
+{
+  "name": "wordgame",
+  "version": "1.0.0",
+  "description": "Game of words",
+  "scripts": {
+    "test": "karma start karma.conf.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ol-ko/wordgame.git"
+  },
+  "author": "ol-ko",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ol-ko/wordgame/issues"
+  },
+  "homepage": "https://github.com/ol-ko/wordgame#readme",
+  "dependencies": {
+    "browserify": "^13.0.0",
+    "finalhandler": "^0.4.1",
+    "gulp": "^3.9.0",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-sass": "^2.2.0",
+    "gulp-watch": "^4.3.5",
+    "run-sequence": "^1.1.5",
+    "serve-static": "^1.10.2",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "devDependencies": {
+    "jasmine-core": "^2.4.1",
+    "karma": "^0.13.19",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-jasmine": "^0.3.7"
+  }
+}

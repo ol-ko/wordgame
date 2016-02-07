@@ -1,0 +1,39 @@
+.command-line {
+	position: relative;
+	margin-top: 16px;
+}
+.user-word {
+	height: 80px;
+	background: $darkgray;
+	color: $white;
+	margin: 0;
+	padding-left: 2em;
+	& + .invitation {
+		position: absolute;
+		top: 50%;
+		left: 1em;
+		margin-top: -0.5em * $line-height-base;
+		color: $white;
+		&:before {
+			content: '> ';
+		}
+	}
+	&:focus {
+		outline: none;
+	}
+}
+
+h1.puzzle {
+	margin-top: 46px;
+	margin-bottom: 23px;
+}
+
+.list-group-item {
+	border: none;
+	margin-bottom: 0;
+
+	&.list-header {
+		border: $inputBorderWidth dashed $darkgray;
+		margin-bottom: 1em;
+	}
+}

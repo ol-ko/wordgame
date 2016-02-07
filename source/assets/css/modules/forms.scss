@@ -1,0 +1,47 @@
+input,
+.btn-default,
+.form-control {
+	border-width: $inputBorderWidth;
+}
+.form-control {
+	margin-bottom: 0.6em;
+}
+
+.btn-default {
+	&:hover {
+		background: $white;
+	}
+}
+.btn-primary {
+	&:hover {
+		background: $darkgray;
+	}
+}
+
+.btn {
+	padding-left: 2em;
+	padding-right: 2em;
+	position: relative;
+	&:hover,
+	&:focus,
+	&:active{
+		&:before {
+			content: '> ';
+			position: absolute;
+			left: 0.5em;
+		}
+		&:after {
+			content: ' <';
+			position: absolute;
+			right: 0.5em;
+		}
+	}
+	&:focus {
+		outline: none;
+		border-color: $green;
+	}
+}
+
+input:focus {
+	outline: none;
+}
