@@ -13,7 +13,9 @@ Requires Node.js and npm of course.
 ## Installation
 
 ```npm install```
+
 ```bower install```
+
 ```gulp```
 
 Game should run on http://localhost:3000
