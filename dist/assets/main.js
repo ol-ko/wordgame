@@ -45472,17 +45472,19 @@ angular.module("game").controller('GameController', ['$scope', 'Words', 'Score',
 		// Initiates a puzzle with a new word
 		var initNewPuzzle = function () {
 			// getting a first item of randomized words array
-			activeWord = wordsPull[0];
-			wordsPull.shift();
+			if (wordsPull.length > 0) {
+				activeWord = wordsPull[0];
+				wordsPull.shift();
 
-			// obfuscate word
-			$scope.obfuscatedWord = shuffleString(activeWord);
+				// obfuscate word
+				$scope.obfuscatedWord = shuffleString(activeWord);
 
-			// init current puzzle
-			$scope.attempt = '';
-			wordMaxScore = Math.floor(Math.pow(1.95, activeWord.length / 3));
-			removedCharsCounter = 0;
-			previousAttemptWordLength = 0;
+				// init current puzzle
+				$scope.attempt = '';
+				wordMaxScore = Math.floor(Math.pow(1.95, activeWord.length / 3));
+				removedCharsCounter = 0;
+				previousAttemptWordLength = 0;
+			}
 		};
 
 		// Checks if user has made corrections and/or guessed the word
