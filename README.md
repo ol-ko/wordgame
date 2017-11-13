@@ -2,13 +2,11 @@
 
 Live demo: [http://ol-ko.github.io/](http://ol-ko.github.io/)
 
-A sample project which utilizes:
-- AngularJS for app logic
-- Bootstrap for styling
-- Gulp for building SCSS and concatenating JS files via Browserify
+A sample project using:
+- AngularJS
+- Bootstrap & SCSS
+- Gulp for running bulding and bundling tasks
 - Karma + Jasmine for running a single test :)
-
-Requires Node.js and npm of course.
 
 ## Installation
 
